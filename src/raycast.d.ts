@@ -50,14 +50,14 @@ declare module "@raycast/api" {
   };
 
   function showToast(toast: {
-    style: any;
+    style: "failure" | "success" | "animated";
     title: string;
     message?: string;
   }): void;
 
   const Toast: {
     Style: {
-      Failure: string;
+      Failure: "failure";
     };
   };
 

@@ -39,14 +39,6 @@ export interface MovieDetails extends Movie {
 
 const OMDB_API_KEY = getPreferenceValues<{ apiKey: string }>().apiKey;
 
-function getRatingIcon(score: string): string {
-  const numericScore = parseInt(score);
-  if (isNaN(numericScore)) return "🤔";
-  if (score.includes("%")) return numericScore >= 60 ? "🍅" : "🤢";
-  if (score.includes("/")) return numericScore >= 60 ? "🪣" : "🥤";
-  return "⭐️";
-}
-
 function movieToMarkdown(details: MovieDetails) {
   return [
     `# ${details.title} (${details.year})`,
