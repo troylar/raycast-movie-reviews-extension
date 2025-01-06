@@ -9,7 +9,10 @@ export const List = Object.assign(
     }
     return React.createElement("div", { "data-testid": "list" }, children);
   },
-  { Item: (props: any) => React.createElement("div", { "data-testid": "list-item" }, props.title) }
+  {
+    Item: (props: any) =>
+      React.createElement("div", { "data-testid": "list-item" }, props.title),
+  },
 );
 
 export const Action = {
@@ -17,7 +20,8 @@ export const Action = {
   OpenInBrowser: (props: any) => React.createElement("div", null),
 };
 
-export const ActionPanel = (props: any) => React.createElement("div", null, props.children);
+export const ActionPanel = (props: any) =>
+  React.createElement("div", null, props.children);
 export const Detail = (props: any) => React.createElement("div", null);
 export const Icon = { Eye: "eye", Star: "star" };
 export const showToast = jest.fn();

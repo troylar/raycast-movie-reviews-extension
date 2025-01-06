@@ -72,22 +72,23 @@ describe("Movie Reviews Extension", () => {
     ],
   };
 
-  const createMockResponse = (body: any, status = 200): Response => ({
-    ok: status >= 200 && status < 300,
-    status,
-    json: async () => body,
-  } as Response);
+  const createMockResponse = (body: any, status = 200): Response =>
+    ({
+      ok: status >= 200 && status < 300,
+      status,
+      json: async () => body,
+    }) as Response;
 
   beforeEach(() => {
     // Reset all mocks
     jest.clearAllMocks();
-    
+
     // Mock preferences
     (getPreferenceValues as jest.Mock).mockReturnValue({ apiKey: mockApiKey });
-    
+
     // Mock fetch
     (fetch as jest.MockedFunction<typeof fetch>).mockResolvedValue(
-      createMockResponse({ Search: [mockMovie] })
+      createMockResponse({ Search: [mockMovie] }),
     );
   });
 
@@ -95,19 +96,19 @@ describe("Movie Reviews Extension", () => {
     it("should handle missing API key", async () => {
       (getPreferenceValues as jest.Mock).mockReturnValue({ apiKey: "" });
       (fetch as jest.MockedFunction<typeof fetch>).mockResolvedValue(
-        createMockResponse({ Error: "Invalid API key!" }, 401)
+        createMockResponse({ Error: "Invalid API key!" }, 401),
       );
     });
 
     it("should handle API errors", async () => {
       (fetch as jest.MockedFunction<typeof fetch>).mockResolvedValue(
-        createMockResponse({}, 500)
+        createMockResponse({}, 500),
       );
     });
 
     it("should handle no results", async () => {
       (fetch as jest.MockedFunction<typeof fetch>).mockResolvedValue(
-        createMockResponse({ Error: "Movie not found!" })
+        createMockResponse({ Error: "Movie not found!" }),
       );
     });
   });
@@ -130,7 +131,7 @@ describe("Movie Reviews Extension", () => {
 
   describe("URL Generation", () => {
     const movieTitle = "Test Movie: A Story";
-    
+
     it("should generate correct Rotten Tomatoes URL", () => {
       const expected = "https://www.rottentomatoes.com/m/test_movie_a_story";
       const generated = `https://www.rottentomatoes.com/m/${movieTitle.toLowerCase().replace(/[^a-z0-9]+/g, "_")}`;
@@ -155,12 +156,12 @@ describe("Movie Reviews Extension", () => {
     describe("getMovieUrl", () => {
       it("should handle undefined details gracefully", async () => {
         // Mock the fetch function to return undefined
-        const mockFetch = jest.fn().mockImplementation(() => 
+        const mockFetch = jest.fn().mockImplementation(() =>
           Promise.resolve({
             ok: true,
             status: 200,
-            json: () => Promise.resolve(undefined)
-          } as Response)
+            json: () => Promise.resolve(undefined),
+          } as Response),
         );
         (global as any).fetch = mockFetch;
 
@@ -174,21 +175,23 @@ describe("Movie Reviews Extension", () => {
             rottenTomatoes: "90%",
             audience: "85%",
             metacritic: "75",
-            metacriticUser: "7.5"
-          }
+            metacriticUser: "7.5",
+          },
         };
 
         // Create a custom hook to access the component's internal state and functions
         const useMovieDetails = () => {
           const [details, setDetails] = React.useState<Movie | null>(null);
-          const getMovieUrl = (site: "rt" | "audience" | "metacritic" | "imdb") => {
+          const getMovieUrl = (
+            site: "rt" | "audience" | "metacritic" | "imdb",
+          ) => {
             if (!details?.title) {
               return "";
             }
             const title = encodeURIComponent(
               details.title
                 .toLowerCase()
-                .replace(/[^a-z0-9]+/g, site === "metacritic" ? "-" : "_")
+                .replace(/[^a-z0-9]+/g, site === "metacritic" ? "-" : "_"),
             );
             switch (site) {
               case "rt":
@@ -205,7 +208,7 @@ describe("Movie Reviews Extension", () => {
         };
 
         const { result } = renderHook(() => useMovieDetails());
-        
+
         expect(result.current.getMovieUrl("rt")).toBe("");
         expect(result.current.getMovieUrl("imdb")).toBe("");
         expect(result.current.getMovieUrl("metacritic")).toBe("");

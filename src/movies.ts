@@ -96,11 +96,11 @@ export function MovieDetails({ movie }: { movie: Movie }) {
         setIsLoading(true);
         setError(null);
         const response = await fetch(
-          `http://www.omdbapi.com/?i=${movie.imdbID}&apikey=${OMDB_API_KEY}`
+          `http://www.omdbapi.com/?i=${movie.imdbID}&apikey=${OMDB_API_KEY}`,
         );
         if (!response.ok) {
           throw new Error(
-            `Failed to fetch movie details: ${response.statusText}`
+            `Failed to fetch movie details: ${response.statusText}`,
           );
         }
         const data = await response.json();
@@ -119,7 +119,7 @@ export function MovieDetails({ movie }: { movie: Movie }) {
                 : "N/A",
             rottenTomatoes:
               data.Ratings?.find(
-                (r: { Source: string }) => r.Source === "Rotten Tomatoes"
+                (r: { Source: string }) => r.Source === "Rotten Tomatoes",
               )?.Value || "N/A",
             audience:
               data.imdbRating && data.imdbRating !== "N/A"
@@ -127,24 +127,24 @@ export function MovieDetails({ movie }: { movie: Movie }) {
                 : "N/A",
             metacritic:
               data.Ratings?.find(
-                (r: { Source: string }) => r.Source === "Metacritic"
+                (r: { Source: string }) => r.Source === "Metacritic",
               )?.Value || "N/A",
             metacriticUser: data.Ratings?.find(
-              (r: { Source: string }) => r.Source === "Metacritic"
+              (r: { Source: string }) => r.Source === "Metacritic",
             )?.Value
               ? `${Math.round(
                   parseFloat(
                     data.Ratings.find(
-                      (r: { Source: string }) => r.Source === "Metacritic"
-                    )?.Value.replace("/100", "")
-                  ) * 0.8
+                      (r: { Source: string }) => r.Source === "Metacritic",
+                    )?.Value.replace("/100", ""),
+                  ) * 0.8,
                 )}%`
               : "N/A",
           },
         });
       } catch (error) {
         setError(
-          error instanceof Error ? error.message : "An unknown error occurred"
+          error instanceof Error ? error.message : "An unknown error occurred",
         );
       } finally {
         setIsLoading(false);
@@ -162,7 +162,7 @@ export function MovieDetails({ movie }: { movie: Movie }) {
     const title = encodeURIComponent(
       details.title
         .toLowerCase()
-        .replace(/[^a-z0-9]+/g, site === "metacritic" ? "-" : "_")
+        .replace(/[^a-z0-9]+/g, site === "metacritic" ? "-" : "_"),
     );
     switch (site) {
       case "rt":
@@ -256,7 +256,7 @@ export function MovieDetails({ movie }: { movie: Movie }) {
       React.createElement(Action.CopyToClipboard, {
         title: "Copy IMDB URL",
         content: getMovieUrl("imdb"),
-      })
+      }),
     ),
   });
 }
@@ -272,11 +272,11 @@ function MovieListItem({ movie }: { movie: Movie }) {
 
       try {
         const response = await fetch(
-          `http://www.omdbapi.com/?i=${movie.imdbID}&apikey=${OMDB_API_KEY}`
+          `http://www.omdbapi.com/?i=${movie.imdbID}&apikey=${OMDB_API_KEY}`,
         );
         if (!response.ok) {
           throw new Error(
-            `Failed to fetch movie details: ${response.statusText}`
+            `Failed to fetch movie details: ${response.statusText}`,
           );
         }
         const data = await response.json();
@@ -293,7 +293,7 @@ function MovieListItem({ movie }: { movie: Movie }) {
                 : "N/A",
             rottenTomatoes:
               data.Ratings?.find(
-                (r: { Source: string }) => r.Source === "Rotten Tomatoes"
+                (r: { Source: string }) => r.Source === "Rotten Tomatoes",
               )?.Value || "N/A",
             audience:
               data.imdbRating && data.imdbRating !== "N/A"
@@ -301,17 +301,17 @@ function MovieListItem({ movie }: { movie: Movie }) {
                 : "N/A",
             metacritic:
               data.Ratings?.find(
-                (r: { Source: string }) => r.Source === "Metacritic"
+                (r: { Source: string }) => r.Source === "Metacritic",
               )?.Value || "N/A",
             metacriticUser: data.Ratings?.find(
-              (r: { Source: string }) => r.Source === "Metacritic"
+              (r: { Source: string }) => r.Source === "Metacritic",
             )?.Value
               ? `${Math.round(
                   parseFloat(
                     data.Ratings.find(
-                      (r: { Source: string }) => r.Source === "Metacritic"
-                    )?.Value.replace("/100", "")
-                  ) * 0.8
+                      (r: { Source: string }) => r.Source === "Metacritic",
+                    )?.Value.replace("/100", ""),
+                  ) * 0.8,
                 )}%`
               : "N/A",
           },
@@ -370,7 +370,7 @@ function MovieListItem({ movie }: { movie: Movie }) {
           title: "Show Details",
           target: React.createElement(MovieDetails, { movie }),
         }),
-      ])
+      ]),
     ),
   });
 }
@@ -398,7 +398,7 @@ export default function Command() {
         setIsLoading(true);
         setError(null);
         const response = await fetch(
-          `http://www.omdbapi.com/?s=${encodeURIComponent(searchText)}&apikey=${OMDB_API_KEY}`
+          `http://www.omdbapi.com/?s=${encodeURIComponent(searchText)}&apikey=${OMDB_API_KEY}`,
         );
 
         if (!response.ok) {
@@ -419,12 +419,12 @@ export default function Command() {
               year: item.Year,
               imdbID: item.imdbID,
               poster: item.Poster,
-            }))
+            })),
           );
         }
       } catch (error) {
         setError(
-          error instanceof Error ? error.message : "An unknown error occurred"
+          error instanceof Error ? error.message : "An unknown error occurred",
         );
         setMovies([]);
       } finally {
@@ -464,7 +464,7 @@ export default function Command() {
               React.createElement(MovieListItem, {
                 key: movie.imdbID,
                 movie: movie,
-              })
+              }),
             ),
   });
 }

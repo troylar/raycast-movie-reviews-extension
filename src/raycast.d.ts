@@ -43,14 +43,18 @@ declare module "@raycast/api" {
 
   const ActionPanel: ComponentType<ActionPanelProps>;
   const Detail: ComponentType<DetailProps>;
-  
+
   const Icon: {
     Eye: string;
     Star: string;
   };
 
-  function showToast(toast: { style: any; title: string; message?: string }): void;
-  
+  function showToast(toast: {
+    style: any;
+    title: string;
+    message?: string;
+  }): void;
+
   const Toast: {
     Style: {
       Failure: string;
