@@ -166,8 +166,10 @@ describe("Movie Reviews Extension", () => {
             status: 200,
             json: () => Promise.resolve(undefined),
           } as Response),
-        ) as jest.MockedFunction<typeof fetch>;
-        (global as { fetch: typeof fetch }).fetch = mockFetch;
+        ) as unknown as jest.MockedFunction<typeof fetch>;
+        (
+          global as unknown as { fetch: jest.MockedFunction<typeof fetch> }
+        ).fetch = mockFetch;
 
         const movie: Movie = {
           title: "Test Movie",
