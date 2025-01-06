@@ -1,0 +1,14 @@
+# Dependencies
+node_modules
+
+# Build
+dist
+
+# Environment
+.env
+.env.local
+
+# Misc
+.DS_Store
+*.log
+.raycast-swift-build
