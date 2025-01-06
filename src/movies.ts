@@ -154,61 +154,81 @@ export function MovieDetails({ movie }: { movie: Movie }) {
     }
   };
 
-  return React.createElement(Detail, {
-    markdown: error
-      ? `# Error\n\n${error}`
-      : details
-        ? movieToMarkdown(details)
-        : "Loading movie details...",
-    isLoading: isLoading,
-    metadata: details
-      ? React.createElement(Detail.Metadata, null, [
-          React.createElement(Detail.Metadata.TagList, {
-            key: "tomatoes",
-            title: "Rotten Tomatoes",
-            children: React.createElement(Detail.Metadata.TagList.Item, {
-              text: details.ratings.rottenTomatoes,
-              icon: { source: "🍅", tintColor: "red" },
+  return React.createElement(
+    Detail,
+    {
+      markdown: error
+        ? `# Error\n\n${error}`
+        : details
+          ? movieToMarkdown(details)
+          : "Loading movie details...",
+      isLoading: isLoading,
+      metadata: details
+        ? React.createElement(
+            Detail.Metadata,
+            null,
+            React.createElement(
+              Detail.Metadata.TagList,
+              {
+                key: "tomatoes",
+                title: "Rotten Tomatoes",
+              },
+              React.createElement(Detail.Metadata.TagList.Item, {
+                text: details.ratings.rottenTomatoes,
+                icon: { source: "🍅", tintColor: "red" },
+              }),
+            ),
+            React.createElement(
+              Detail.Metadata.TagList,
+              {
+                key: "audience",
+                title: "Audience Score",
+              },
+              React.createElement(Detail.Metadata.TagList.Item, {
+                text: details.ratings.audience,
+                icon: { source: "🍿", tintColor: "yellow" },
+              }),
+            ),
+            React.createElement(Detail.Metadata.Separator, {
+              key: "separator2",
             }),
-          }),
-          React.createElement(Detail.Metadata.TagList, {
-            key: "audience",
-            title: "Audience Score",
-            children: React.createElement(Detail.Metadata.TagList.Item, {
-              text: details.ratings.audience,
-              icon: { source: "🍿", tintColor: "yellow" },
-            }),
-          }),
-          React.createElement(Detail.Metadata.Separator, {
-            key: "separator2",
-          }),
-          React.createElement(Detail.Metadata.TagList, {
-            key: "metacritic",
-            title: "Metacritic",
-            children: React.createElement(Detail.Metadata.TagList.Item, {
-              text: details.ratings.metacritic,
-              icon: { source: "🎯", tintColor: "purple" },
-            }),
-          }),
-          React.createElement(Detail.Metadata.TagList, {
-            key: "metacriticUser",
-            title: "Metacritic User",
-            children: React.createElement(Detail.Metadata.TagList.Item, {
-              text: details.ratings.metacriticUser,
-              icon: { source: "👥", tintColor: "purple" },
-            }),
-          }),
-          React.createElement(Detail.Metadata.TagList, {
-            key: "imdb",
-            title: "IMDB",
-            children: React.createElement(Detail.Metadata.TagList.Item, {
-              text: details.ratings.imdb,
-              icon: { source: "⭐️", tintColor: "yellow" },
-            }),
-          }),
-        ])
-      : null,
-    actions: React.createElement(
+            React.createElement(
+              Detail.Metadata.TagList,
+              {
+                key: "metacritic",
+                title: "Metacritic",
+              },
+              React.createElement(Detail.Metadata.TagList.Item, {
+                text: details.ratings.metacritic,
+                icon: { source: "🎯", tintColor: "purple" },
+              }),
+            ),
+            React.createElement(
+              Detail.Metadata.TagList,
+              {
+                key: "metacriticUser",
+                title: "Metacritic User",
+              },
+              React.createElement(Detail.Metadata.TagList.Item, {
+                text: details.ratings.metacriticUser,
+                icon: { source: "👥", tintColor: "purple" },
+              }),
+            ),
+            React.createElement(
+              Detail.Metadata.TagList,
+              {
+                key: "imdb",
+                title: "IMDB",
+              },
+              React.createElement(Detail.Metadata.TagList.Item, {
+                text: details.ratings.imdb,
+                icon: { source: "⭐️", tintColor: "yellow" },
+              }),
+            ),
+          )
+        : null,
+    },
+    React.createElement(
       ActionPanel,
       null,
       React.createElement(Action.OpenInBrowser, {
@@ -236,7 +256,7 @@ export function MovieDetails({ movie }: { movie: Movie }) {
         content: getMovieUrl("imdb"),
       }),
     ),
-  });
+  );
 }
 
 export default function Command() {
@@ -278,12 +298,19 @@ export default function Command() {
           }
         } else {
           setMovies(
-            data.Search.map((item: any) => ({
-              title: item.Title,
-              year: item.Year,
-              imdbID: item.imdbID,
-              poster: item.Poster,
-            })),
+            data.Search.map(
+              (item: {
+                Title: string;
+                Year: string;
+                imdbID: string;
+                Poster: string;
+              }) => ({
+                title: item.Title,
+                year: item.Year,
+                imdbID: item.imdbID,
+                poster: item.Poster,
+              }),
+            ),
           );
         }
       } catch (error) {
@@ -300,13 +327,16 @@ export default function Command() {
     return () => clearTimeout(debounceTimeout);
   }, [searchText]);
 
-  return React.createElement(List, {
-    isLoading: isLoading,
-    searchText: searchText,
-    onSearchTextChange: setSearchText,
-    searchBarPlaceholder: "Search movies by title...",
-    throttle: true,
-    children: error
+  return React.createElement(
+    List,
+    {
+      isLoading: isLoading,
+      searchText: searchText,
+      onSearchTextChange: setSearchText,
+      searchBarPlaceholder: "Search movies by title...",
+      throttle: true,
+    },
+    error
       ? React.createElement(List.EmptyView, {
           title: "Error",
           description: error,
@@ -330,7 +360,7 @@ export default function Command() {
                 movie: movie,
               }),
             ),
-  });
+  );
 }
 
 function MovieListItem({ movie }: { movie: Movie }) {
@@ -430,19 +460,24 @@ function MovieListItem({ movie }: { movie: Movie }) {
     }
   }
 
-  return React.createElement(List.Item, {
-    title: `${movie.title} (${movie.year})`,
-    accessories: accessories,
-    actions: React.createElement(
+  return React.createElement(
+    List.Item,
+    {
+      title: `${movie.title} (${movie.year})`,
+      accessories: accessories,
+    },
+    React.createElement(
       ActionPanel,
       null,
-      React.createElement(ActionPanel.Section, null, [
+      React.createElement(
+        ActionPanel.Section,
+        null,
         React.createElement(Action.Push, {
           key: "details",
           title: "Show Details",
           target: React.createElement(MovieDetails, { movie }),
         }),
-      ]),
+      ),
     ),
-  });
+  );
 }
