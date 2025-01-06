@@ -460,24 +460,21 @@ function MovieListItem({ movie }: { movie: Movie }) {
     }
   }
 
-  return React.createElement(
-    List.Item,
-    {
-      title: `${movie.title} (${movie.year})`,
-      accessories: accessories,
-      actions: React.createElement(
-        ActionPanel,
+  return React.createElement(List.Item, {
+    title: `${movie.title} (${movie.year})`,
+    accessories: accessories,
+    actions: React.createElement(
+      ActionPanel,
+      null,
+      React.createElement(
+        ActionPanel.Section,
         null,
-        React.createElement(
-          ActionPanel.Section,
-          null,
-          React.createElement(Action.Push, {
-            key: "details",
-            title: "Show Details",
-            target: React.createElement(MovieDetails, { movie }),
-          }),
-        ),
+        React.createElement(Action.Push, {
+          key: "details",
+          title: "Show Details",
+          target: React.createElement(MovieDetails, { movie }),
+        }),
       ),
-    },
-  );
+    ),
+  });
 }
