@@ -25,4 +25,7 @@ This extension requires an OMDB API key to function. You can get a free API key 
 
 ## Screenshots
 
-[Screenshots will be added during store submission]
+![CleanShot 2025-01-06 at 16 35 57@2x](https://github.com/user-attachments/assets/c4965319-b075-419b-acc1-6420fe39560f)
+
+![CleanShot 2025-01-06 at 16 36 31@2x](https://github.com/user-attachments/assets/374a65c1-1802-4973-9502-f79a61792c80)
+
