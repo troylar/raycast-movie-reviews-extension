@@ -465,19 +465,19 @@ function MovieListItem({ movie }: { movie: Movie }) {
     {
       title: `${movie.title} (${movie.year})`,
       accessories: accessories,
-    },
-    React.createElement(
-      ActionPanel,
-      null,
-      React.createElement(
-        ActionPanel.Section,
+      actions: React.createElement(
+        ActionPanel,
         null,
-        React.createElement(Action.Push, {
-          key: "details",
-          title: "Show Details",
-          target: React.createElement(MovieDetails, { movie }),
-        }),
+        React.createElement(
+          ActionPanel.Section,
+          null,
+          React.createElement(Action.Push, {
+            key: "details",
+            title: "Show Details",
+            target: React.createElement(MovieDetails, { movie }),
+          }),
+        ),
       ),
-    ),
+    },
   );
 }
