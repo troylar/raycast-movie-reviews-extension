@@ -209,7 +209,7 @@ export function MovieDetails({ movie }: { movie: Movie }) {
             title: "Metacritic",
             children: React.createElement(Detail.Metadata.TagList.Item, {
               text: details.ratings.metacritic,
-              icon: { source: "🎯", tintColor: "blue" },
+              icon: { source: "🎯", tintColor: "purple" },
             }),
           }),
           React.createElement(Detail.Metadata.TagList, {
@@ -217,7 +217,7 @@ export function MovieDetails({ movie }: { movie: Movie }) {
             title: "Metacritic User",
             children: React.createElement(Detail.Metadata.TagList.Item, {
               text: details.ratings.metacriticUser,
-              icon: { source: "👥", tintColor: "blue" },
+              icon: { source: "👥", tintColor: "purple" },
             }),
           }),
           React.createElement(Detail.Metadata.TagList, {
@@ -250,7 +250,7 @@ export function MovieDetails({ movie }: { movie: Movie }) {
       }),
       React.createElement(Action.OpenInBrowser, {
         title: "View on Metacritic",
-        icon: { source: "🎯", tintColor: "blue" },
+        icon: { source: "🎯", tintColor: "purple" },
         url: getMovieUrl("metacritic"),
       }),
       React.createElement(Action.CopyToClipboard, {
@@ -341,13 +341,13 @@ function MovieListItem({ movie }: { movie: Movie }) {
     if (details.ratings.metacritic !== "N/A") {
       accessories.push({
         text: details.ratings.metacritic,
-        icon: { source: "🎯", tintColor: "blue" },
+        icon: { source: "🎯", tintColor: "purple" },
       });
     }
     if (details.ratings.metacriticUser !== "N/A") {
       accessories.push({
         text: details.ratings.metacriticUser,
-        icon: { source: "👥", tintColor: "blue" },
+        icon: { source: "👥", tintColor: "purple" },
       });
     }
     if (details.ratings.imdb !== "N/A") {
