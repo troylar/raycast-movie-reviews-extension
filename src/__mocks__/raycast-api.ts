@@ -1,17 +1,15 @@
 import React from "react";
 
-// Mock List component that calls onSearchTextChange
+// Mock List component
 export const List = Object.assign(
   ({ onSearchTextChange, children }: any) => {
-    React.useEffect(() => {
-      // Call onSearchTextChange with initial value in useEffect
-      if (onSearchTextChange) {
-        onSearchTextChange("test");
-      }
-    }, []);
-    return React.createElement("div", null, children);
+    // Call onSearchTextChange immediately instead of in useEffect
+    if (onSearchTextChange) {
+      setTimeout(() => onSearchTextChange("test"), 0);
+    }
+    return React.createElement("div", { "data-testid": "list" }, children);
   },
-  { Item: (props: any) => React.createElement("div", null, props.title) }
+  { Item: (props: any) => React.createElement("div", { "data-testid": "list-item" }, props.title) }
 );
 
 export const Action = {
@@ -25,7 +23,7 @@ export const Icon = { Eye: "eye", Star: "star" };
 export const showToast = jest.fn();
 export const Toast = { Style: { Failure: "failure" } };
 
-// Mock preferences
+// Mock preferences with test API key
 export const getPreferenceValues = jest.fn(() => ({
   apiKey: "test_api_key",
 }));

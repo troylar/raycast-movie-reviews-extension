@@ -8,7 +8,7 @@
 /* eslint-disable @typescript-eslint/ban-types */
 
 type ExtensionPreferences = {
-  /** OMDB API Key - Your OMDB API key. Get one at http://www.omdbapi.com/apikey.aspx */
+  /** OMDB API Key - Get your API key from https://www.omdbapi.com/apikey.aspx */
   "apiKey": string
 }
 

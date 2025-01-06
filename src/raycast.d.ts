@@ -57,6 +57,8 @@ declare module "@raycast/api" {
     };
   };
 
+  export function getPreferenceValues<T>(): T;
+
   export {
     List,
     Action,

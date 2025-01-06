@@ -2,16 +2,20 @@
   "$schema": "https://www.raycast.com/schemas/extension.json",
   "name": "movie-reviews",
   "title": "Movie Reviews",
-  "description": "Search and view movie reviews from IMDB and Rotten Tomatoes",
+  "description": "Search movies and view ratings from IMDB, Rotten Tomatoes, and Metacritic",
   "icon": "extension-icon.png",
   "author": "troylar",
   "owner": "calvinware",
   "license": "MIT",
+  "categories": [
+    "Media",
+    "Web"
+  ],
   "commands": [
     {
       "name": "movies",
       "title": "Search Movies",
-      "description": "Search for movies and view their reviews from IMDB and Rotten Tomatoes",
+      "description": "Search for movies and view ratings from multiple review sites",
       "mode": "view"
     }
   ],
@@ -51,7 +55,7 @@
       "type": "password",
       "required": true,
       "title": "OMDB API Key",
-      "description": "Your OMDB API key. Get one at http://www.omdbapi.com/apikey.aspx",
+      "description": "Get your API key from https://www.omdbapi.com/apikey.aspx",
       "placeholder": "Enter your OMDB API key"
     }
   ]
