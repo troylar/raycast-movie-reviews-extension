@@ -5,7 +5,6 @@ import {
   Detail,
   Icon,
   List,
-  showToast,
   getPreferenceValues,
 } from "@raycast/api";
 import fetch from "node-fetch";
@@ -39,29 +38,16 @@ export interface MovieDetails extends Movie {
 }
 
 const OMDB_API_KEY = getPreferenceValues<{ apiKey: string }>().apiKey;
-const DEBOUNCE_DELAY = 300;
 
-async function fetchFromOMDB(endpoint: string) {
-  const url = `https://www.omdbapi.com/?apikey=${OMDB_API_KEY}&${endpoint}`;
-  const response = await fetch(url);
-  const data = await response.json();
-
-  if (data.Response !== "True") {
-    throw new Error(data.Error || "Failed to fetch data");
-  }
-
-  return data;
-}
-
-const getRatingIcon = (score: string): string => {
+function getRatingIcon(score: string): string {
   const numericScore = parseInt(score);
   if (isNaN(numericScore)) return "🤔";
   if (score.includes("%")) return numericScore >= 60 ? "🍅" : "🤢";
   if (score.includes("/")) return numericScore >= 60 ? "🪣" : "🥤";
   return "⭐️";
-};
+}
 
-const movieToMarkdown = (details: MovieDetails) => {
+function movieToMarkdown(details: MovieDetails) {
   return [
     `# ${details.title} (${details.year})`,
     "",
@@ -77,7 +63,7 @@ const movieToMarkdown = (details: MovieDetails) => {
     `### Cast`,
     ...details.cast.map((actor) => `• ${actor}`),
   ].join("\n");
-};
+}
 
 export function MovieDetails({ movie }: { movie: Movie }) {
   const [details, setDetails] = React.useState<MovieDetails | null>(null);
@@ -261,6 +247,100 @@ export function MovieDetails({ movie }: { movie: Movie }) {
   });
 }
 
+export default function Command() {
+  const [searchText, setSearchText] = React.useState("");
+  const [movies, setMovies] = React.useState<Movie[]>([]);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    async function performSearch() {
+      if (!searchText.trim()) {
+        setMovies([]);
+        setError(null);
+        return;
+      }
+
+      if (!OMDB_API_KEY) {
+        setError("Please add your OMDB API key in extension preferences");
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        setError(null);
+        const response = await fetch(
+          `http://www.omdbapi.com/?s=${encodeURIComponent(searchText)}&apikey=${OMDB_API_KEY}`,
+        );
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch movies: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        if (data.Error) {
+          if (data.Error === "Movie not found!") {
+            setMovies([]);
+          } else {
+            throw new Error(data.Error);
+          }
+        } else {
+          setMovies(
+            data.Search.map((item: any) => ({
+              title: item.Title,
+              year: item.Year,
+              imdbID: item.imdbID,
+              poster: item.Poster,
+            })),
+          );
+        }
+      } catch (error) {
+        setError(
+          error instanceof Error ? error.message : "An unknown error occurred",
+        );
+        setMovies([]);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    const debounceTimeout = setTimeout(performSearch, 300);
+    return () => clearTimeout(debounceTimeout);
+  }, [searchText]);
+
+  return React.createElement(List, {
+    isLoading: isLoading,
+    searchText: searchText,
+    onSearchTextChange: setSearchText,
+    searchBarPlaceholder: "Search movies by title...",
+    throttle: true,
+    children: error
+      ? React.createElement(List.EmptyView, {
+          title: "Error",
+          description: error,
+          icon: Icon.ExclamationMark,
+        })
+      : !searchText
+        ? React.createElement(List.EmptyView, {
+            title: "Type to Search",
+            description: "Enter a movie title to start searching",
+            icon: Icon.MagnifyingGlass,
+          })
+        : movies.length === 0
+          ? React.createElement(List.EmptyView, {
+              title: "No Results",
+              description: "Try searching with a different title",
+              icon: Icon.QuestionMark,
+            })
+          : movies.map((movie) =>
+              React.createElement(MovieListItem, {
+                key: movie.imdbID,
+                movie: movie,
+              }),
+            ),
+  });
+}
+
 function MovieListItem({ movie }: { movie: Movie }) {
   const [details, setDetails] = React.useState<MovieDetails | null>(null);
 
@@ -372,99 +452,5 @@ function MovieListItem({ movie }: { movie: Movie }) {
         }),
       ]),
     ),
-  });
-}
-
-export default function Command() {
-  const [searchText, setSearchText] = React.useState("");
-  const [movies, setMovies] = React.useState<Movie[]>([]);
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-
-  React.useEffect(() => {
-    async function performSearch() {
-      if (!searchText.trim()) {
-        setMovies([]);
-        setError(null);
-        return;
-      }
-
-      if (!OMDB_API_KEY) {
-        setError("Please add your OMDB API key in extension preferences");
-        return;
-      }
-
-      try {
-        setIsLoading(true);
-        setError(null);
-        const response = await fetch(
-          `http://www.omdbapi.com/?s=${encodeURIComponent(searchText)}&apikey=${OMDB_API_KEY}`,
-        );
-
-        if (!response.ok) {
-          throw new Error(`Failed to fetch movies: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        if (data.Error) {
-          if (data.Error === "Movie not found!") {
-            setMovies([]);
-          } else {
-            throw new Error(data.Error);
-          }
-        } else {
-          setMovies(
-            data.Search.map((item: any) => ({
-              title: item.Title,
-              year: item.Year,
-              imdbID: item.imdbID,
-              poster: item.Poster,
-            })),
-          );
-        }
-      } catch (error) {
-        setError(
-          error instanceof Error ? error.message : "An unknown error occurred",
-        );
-        setMovies([]);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    const debounceTimeout = setTimeout(performSearch, 300);
-    return () => clearTimeout(debounceTimeout);
-  }, [searchText]);
-
-  return React.createElement(List, {
-    isLoading: isLoading,
-    searchText: searchText,
-    onSearchTextChange: setSearchText,
-    searchBarPlaceholder: "Search movies by title...",
-    throttle: true,
-    children: error
-      ? React.createElement(List.EmptyView, {
-          title: "Error",
-          description: error,
-          icon: Icon.ExclamationMark,
-        })
-      : !searchText
-        ? React.createElement(List.EmptyView, {
-            title: "Type to Search",
-            description: "Enter a movie title to start searching",
-            icon: Icon.MagnifyingGlass,
-          })
-        : movies.length === 0
-          ? React.createElement(List.EmptyView, {
-              title: "No Results",
-              description: "Try searching with a different title",
-              icon: Icon.QuestionMark,
-            })
-          : movies.map((movie) =>
-              React.createElement(MovieListItem, {
-                key: movie.imdbID,
-                movie: movie,
-              }),
-            ),
   });
 }

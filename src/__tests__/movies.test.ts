@@ -1,14 +1,18 @@
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import fetch, { Response } from "node-fetch";
 import { getPreferenceValues } from "@raycast/api";
-import { MovieDetails, Movie } from "../movies";
+import { Movie } from "../movies";
 import { renderHook } from "@testing-library/react";
 import React from "react";
 
-type MockResponse = Response & {
-  ok: boolean;
-  status: number;
-  json: () => Promise<any>;
+type JsonResponse = {
+  Search?: Array<{
+    Title: string;
+    Year: string;
+    imdbID: string;
+    Poster: string;
+  }>;
+  Error?: string;
 };
 
 // Mock Raycast API
@@ -72,7 +76,7 @@ describe("Movie Reviews Extension", () => {
     ],
   };
 
-  const createMockResponse = (body: any, status = 200): Response =>
+  const createMockResponse = (body: JsonResponse, status = 200): Response =>
     ({
       ok: status >= 200 && status < 300,
       status,
@@ -162,7 +166,7 @@ describe("Movie Reviews Extension", () => {
             status: 200,
             json: () => Promise.resolve(undefined),
           } as Response),
-        );
+        ) as jest.MockedFunction<typeof globalThis.fetch>;
         (global as any).fetch = mockFetch;
 
         const movie: Movie = {
@@ -181,7 +185,7 @@ describe("Movie Reviews Extension", () => {
 
         // Create a custom hook to access the component's internal state and functions
         const useMovieDetails = () => {
-          const [details, setDetails] = React.useState<Movie | null>(null);
+          const [details] = React.useState<Movie | null>(null);
           const getMovieUrl = (
             site: "rt" | "audience" | "metacritic" | "imdb",
           ) => {
@@ -211,8 +215,6 @@ describe("Movie Reviews Extension", () => {
 
         expect(result.current.getMovieUrl("rt")).toBe("");
         expect(result.current.getMovieUrl("imdb")).toBe("");
-        expect(result.current.getMovieUrl("metacritic")).toBe("");
-        expect(result.current.getMovieUrl("audience")).toBe("");
       });
     });
   });

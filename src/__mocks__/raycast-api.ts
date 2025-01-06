@@ -24,28 +24,18 @@ export const List = Object.assign(
   },
 );
 
-interface ActionProps {
-  target?: React.ReactNode;
-  url?: string;
-}
-
 interface ActionPanelProps {
   children: React.ReactNode;
 }
 
-interface DetailProps {
-  children?: React.ReactNode;
-}
-
 export const Action = {
-  Push: ({ target }: ActionProps) => React.createElement("div", null),
-  OpenInBrowser: ({ url }: ActionProps) => React.createElement("div", null),
+  Push: () => React.createElement("div", null),
+  OpenInBrowser: () => React.createElement("div", null),
 };
 
 export const ActionPanel = ({ children }: ActionPanelProps) =>
   React.createElement("div", null, children);
-export const Detail = ({ children }: DetailProps) =>
-  React.createElement("div", null);
+export const Detail = () => React.createElement("div", null);
 export const Icon = { Eye: "eye", Star: "star" };
 export const showToast = jest.fn();
 export const Toast = { Style: { Failure: "failure" } };
