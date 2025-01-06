@@ -53,7 +53,7 @@ function movieToMarkdown(details: MovieDetails) {
     details.plot,
     "",
     `### Cast`,
-    ...details.cast.split(',').map((actor) => `• ${actor}`),
+    ...details.cast.split(",").map((actor) => `• ${actor}`),
   ].join("\n");
 }
 
@@ -88,7 +88,7 @@ export function MovieDetails({ movie }: { movie: Movie }) {
         setDetails({
           ...movie,
           plot: data.Plot || "No plot available",
-          cast: (data.Actors || "").split(", ").filter(Boolean).join(','),
+          cast: (data.Actors || "").split(", ").filter(Boolean).join(","),
           director: data.Director || "Unknown",
           ratings: {
             imdb:
@@ -389,7 +389,7 @@ function MovieListItem({ movie }: { movie: Movie }) {
           ...movie,
           director: data.Director || "Unknown",
           plot: data.Plot || "No plot available",
-          cast: (data.Actors || "").split(", ").filter(Boolean).join(','),
+          cast: (data.Actors || "").split(", ").filter(Boolean).join(","),
           ratings: {
             imdb:
               data.imdbRating && data.imdbRating !== "N/A"
