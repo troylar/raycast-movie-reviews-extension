@@ -5,7 +5,6 @@ import {
   Detail,
   Icon,
   List,
-  showToast,
   getPreferenceValues,
 } from "@raycast/api";
 import fetch from "node-fetch";
@@ -26,9 +25,9 @@ export interface Movie {
 }
 
 export interface MovieDetails extends Movie {
-  plot: string;
-  cast: string[];
   director: string;
+  plot: string;
+  cast: string;
   ratings: {
     imdb: string;
     rottenTomatoes: string;
@@ -39,29 +38,8 @@ export interface MovieDetails extends Movie {
 }
 
 const OMDB_API_KEY = getPreferenceValues<{ apiKey: string }>().apiKey;
-const DEBOUNCE_DELAY = 300;
 
-async function fetchFromOMDB(endpoint: string) {
-  const url = `https://www.omdbapi.com/?apikey=${OMDB_API_KEY}&${endpoint}`;
-  const response = await fetch(url);
-  const data = await response.json();
-
-  if (data.Response !== "True") {
-    throw new Error(data.Error || "Failed to fetch data");
-  }
-
-  return data;
-}
-
-const getRatingIcon = (score: string): string => {
-  const numericScore = parseInt(score);
-  if (isNaN(numericScore)) return "🤔";
-  if (score.includes("%")) return numericScore >= 60 ? "🍅" : "🤢";
-  if (score.includes("/")) return numericScore >= 60 ? "🪣" : "🥤";
-  return "⭐️";
-};
-
-const movieToMarkdown = (details: MovieDetails) => {
+function movieToMarkdown(details: MovieDetails) {
   return [
     `# ${details.title} (${details.year})`,
     "",
@@ -75,9 +53,9 @@ const movieToMarkdown = (details: MovieDetails) => {
     details.plot,
     "",
     `### Cast`,
-    ...details.cast.map((actor) => `• ${actor}`),
+    ...details.cast.split(",").map((actor) => `• ${actor}`),
   ].join("\n");
-};
+}
 
 export function MovieDetails({ movie }: { movie: Movie }) {
   const [details, setDetails] = React.useState<MovieDetails | null>(null);
@@ -96,11 +74,11 @@ export function MovieDetails({ movie }: { movie: Movie }) {
         setIsLoading(true);
         setError(null);
         const response = await fetch(
-          `http://www.omdbapi.com/?i=${movie.imdbID}&apikey=${OMDB_API_KEY}`
+          `http://www.omdbapi.com/?i=${movie.imdbID}&apikey=${OMDB_API_KEY}`,
         );
         if (!response.ok) {
           throw new Error(
-            `Failed to fetch movie details: ${response.statusText}`
+            `Failed to fetch movie details: ${response.statusText}`,
           );
         }
         const data = await response.json();
@@ -110,7 +88,7 @@ export function MovieDetails({ movie }: { movie: Movie }) {
         setDetails({
           ...movie,
           plot: data.Plot || "No plot available",
-          cast: (data.Actors || "").split(", ").filter(Boolean),
+          cast: (data.Actors || "").split(", ").filter(Boolean).join(","),
           director: data.Director || "Unknown",
           ratings: {
             imdb:
@@ -119,7 +97,7 @@ export function MovieDetails({ movie }: { movie: Movie }) {
                 : "N/A",
             rottenTomatoes:
               data.Ratings?.find(
-                (r: { Source: string }) => r.Source === "Rotten Tomatoes"
+                (r: { Source: string }) => r.Source === "Rotten Tomatoes",
               )?.Value || "N/A",
             audience:
               data.imdbRating && data.imdbRating !== "N/A"
@@ -127,24 +105,24 @@ export function MovieDetails({ movie }: { movie: Movie }) {
                 : "N/A",
             metacritic:
               data.Ratings?.find(
-                (r: { Source: string }) => r.Source === "Metacritic"
+                (r: { Source: string }) => r.Source === "Metacritic",
               )?.Value || "N/A",
             metacriticUser: data.Ratings?.find(
-              (r: { Source: string }) => r.Source === "Metacritic"
+              (r: { Source: string }) => r.Source === "Metacritic",
             )?.Value
               ? `${Math.round(
                   parseFloat(
                     data.Ratings.find(
-                      (r: { Source: string }) => r.Source === "Metacritic"
-                    )?.Value.replace("/100", "")
-                  ) * 0.8
+                      (r: { Source: string }) => r.Source === "Metacritic",
+                    )?.Value.replace("/100", ""),
+                  ) * 0.8,
                 )}%`
               : "N/A",
           },
         });
       } catch (error) {
         setError(
-          error instanceof Error ? error.message : "An unknown error occurred"
+          error instanceof Error ? error.message : "An unknown error occurred",
         );
       } finally {
         setIsLoading(false);
@@ -162,7 +140,7 @@ export function MovieDetails({ movie }: { movie: Movie }) {
     const title = encodeURIComponent(
       details.title
         .toLowerCase()
-        .replace(/[^a-z0-9]+/g, site === "metacritic" ? "-" : "_")
+        .replace(/[^a-z0-9]+/g, site === "metacritic" ? "-" : "_"),
     );
     switch (site) {
       case "rt":
@@ -176,61 +154,81 @@ export function MovieDetails({ movie }: { movie: Movie }) {
     }
   };
 
-  return React.createElement(Detail, {
-    markdown: error
-      ? `# Error\n\n${error}`
-      : details
-        ? movieToMarkdown(details)
-        : "Loading movie details...",
-    isLoading: isLoading,
-    metadata: details
-      ? React.createElement(Detail.Metadata, null, [
-          React.createElement(Detail.Metadata.TagList, {
-            key: "tomatoes",
-            title: "Rotten Tomatoes",
-            children: React.createElement(Detail.Metadata.TagList.Item, {
-              text: details.ratings.rottenTomatoes,
-              icon: { source: "🍅", tintColor: "red" },
+  return React.createElement(
+    Detail,
+    {
+      markdown: error
+        ? `# Error\n\n${error}`
+        : details
+          ? movieToMarkdown(details)
+          : "Loading movie details...",
+      isLoading: isLoading,
+      metadata: details
+        ? React.createElement(
+            Detail.Metadata,
+            null,
+            React.createElement(
+              Detail.Metadata.TagList,
+              {
+                key: "tomatoes",
+                title: "Rotten Tomatoes",
+              },
+              React.createElement(Detail.Metadata.TagList.Item, {
+                text: details.ratings.rottenTomatoes,
+                icon: { source: "🍅", tintColor: "red" },
+              }),
+            ),
+            React.createElement(
+              Detail.Metadata.TagList,
+              {
+                key: "audience",
+                title: "Audience Score",
+              },
+              React.createElement(Detail.Metadata.TagList.Item, {
+                text: details.ratings.audience,
+                icon: { source: "🍿", tintColor: "yellow" },
+              }),
+            ),
+            React.createElement(Detail.Metadata.Separator, {
+              key: "separator2",
             }),
-          }),
-          React.createElement(Detail.Metadata.TagList, {
-            key: "audience",
-            title: "Audience Score",
-            children: React.createElement(Detail.Metadata.TagList.Item, {
-              text: details.ratings.audience,
-              icon: { source: "🍿", tintColor: "yellow" },
-            }),
-          }),
-          React.createElement(Detail.Metadata.Separator, {
-            key: "separator2",
-          }),
-          React.createElement(Detail.Metadata.TagList, {
-            key: "metacritic",
-            title: "Metacritic",
-            children: React.createElement(Detail.Metadata.TagList.Item, {
-              text: details.ratings.metacritic,
-              icon: { source: "🎯", tintColor: "blue" },
-            }),
-          }),
-          React.createElement(Detail.Metadata.TagList, {
-            key: "metacriticUser",
-            title: "Metacritic User",
-            children: React.createElement(Detail.Metadata.TagList.Item, {
-              text: details.ratings.metacriticUser,
-              icon: { source: "👥", tintColor: "blue" },
-            }),
-          }),
-          React.createElement(Detail.Metadata.TagList, {
-            key: "imdb",
-            title: "IMDB",
-            children: React.createElement(Detail.Metadata.TagList.Item, {
-              text: details.ratings.imdb,
-              icon: { source: "⭐️", tintColor: "yellow" },
-            }),
-          }),
-        ])
-      : null,
-    actions: React.createElement(
+            React.createElement(
+              Detail.Metadata.TagList,
+              {
+                key: "metacritic",
+                title: "Metacritic",
+              },
+              React.createElement(Detail.Metadata.TagList.Item, {
+                text: details.ratings.metacritic,
+                icon: { source: "🎯", tintColor: "purple" },
+              }),
+            ),
+            React.createElement(
+              Detail.Metadata.TagList,
+              {
+                key: "metacriticUser",
+                title: "Metacritic User",
+              },
+              React.createElement(Detail.Metadata.TagList.Item, {
+                text: details.ratings.metacriticUser,
+                icon: { source: "👥", tintColor: "purple" },
+              }),
+            ),
+            React.createElement(
+              Detail.Metadata.TagList,
+              {
+                key: "imdb",
+                title: "IMDB",
+              },
+              React.createElement(Detail.Metadata.TagList.Item, {
+                text: details.ratings.imdb,
+                icon: { source: "⭐️", tintColor: "yellow" },
+              }),
+            ),
+          )
+        : null,
+    },
+    React.createElement(
       ActionPanel,
       null,
       React.createElement(Action.OpenInBrowser, {
@@ -250,15 +248,119 @@ export function MovieDetails({ movie }: { movie: Movie }) {
       }),
       React.createElement(Action.OpenInBrowser, {
         title: "View on Metacritic",
-        icon: { source: "🎯", tintColor: "blue" },
+        icon: { source: "🎯", tintColor: "purple" },
         url: getMovieUrl("metacritic"),
       }),
       React.createElement(Action.CopyToClipboard, {
         title: "Copy IMDB URL",
         content: getMovieUrl("imdb"),
-      })
+      }),
     ),
-  });
+  );
+}
+
+export default function Command() {
+  const [searchText, setSearchText] = React.useState("");
+  const [movies, setMovies] = React.useState<Movie[]>([]);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    async function performSearch() {
+      if (!searchText.trim()) {
+        setMovies([]);
+        setError(null);
+        return;
+      }
+
+      if (!OMDB_API_KEY) {
+        setError("Please add your OMDB API key in extension preferences");
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        setError(null);
+        const response = await fetch(
+          `http://www.omdbapi.com/?s=${encodeURIComponent(searchText)}&apikey=${OMDB_API_KEY}`,
+        );
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch movies: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        if (data.Error) {
+          if (data.Error === "Movie not found!") {
+            setMovies([]);
+          } else {
+            throw new Error(data.Error);
+          }
+        } else {
+          setMovies(
+            data.Search.map(
+              (item: {
+                Title: string;
+                Year: string;
+                imdbID: string;
+                Poster: string;
+              }) => ({
+                title: item.Title,
+                year: item.Year,
+                imdbID: item.imdbID,
+                poster: item.Poster,
+              }),
+            ),
+          );
+        }
+      } catch (error) {
+        setError(
+          error instanceof Error ? error.message : "An unknown error occurred",
+        );
+        setMovies([]);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    const debounceTimeout = setTimeout(performSearch, 300);
+    return () => clearTimeout(debounceTimeout);
+  }, [searchText]);
+
+  return React.createElement(
+    List,
+    {
+      isLoading: isLoading,
+      searchText: searchText,
+      onSearchTextChange: setSearchText,
+      searchBarPlaceholder: "Search movies by title...",
+      throttle: true,
+    },
+    error
+      ? React.createElement(List.EmptyView, {
+          title: "Error",
+          description: error,
+          icon: Icon.ExclamationMark,
+        })
+      : !searchText
+        ? React.createElement(List.EmptyView, {
+            title: "Type to Search",
+            description: "Enter a movie title to start searching",
+            icon: Icon.MagnifyingGlass,
+          })
+        : movies.length === 0
+          ? React.createElement(List.EmptyView, {
+              title: "No Results",
+              description: "Try searching with a different title",
+              icon: Icon.QuestionMark,
+            })
+          : movies.map((movie) =>
+              React.createElement(MovieListItem, {
+                key: movie.imdbID,
+                movie: movie,
+              }),
+            ),
+  );
 }
 
 function MovieListItem({ movie }: { movie: Movie }) {
@@ -272,11 +374,11 @@ function MovieListItem({ movie }: { movie: Movie }) {
 
       try {
         const response = await fetch(
-          `http://www.omdbapi.com/?i=${movie.imdbID}&apikey=${OMDB_API_KEY}`
+          `http://www.omdbapi.com/?i=${movie.imdbID}&apikey=${OMDB_API_KEY}`,
         );
         if (!response.ok) {
           throw new Error(
-            `Failed to fetch movie details: ${response.statusText}`
+            `Failed to fetch movie details: ${response.statusText}`,
           );
         }
         const data = await response.json();
@@ -286,6 +388,8 @@ function MovieListItem({ movie }: { movie: Movie }) {
         setDetails({
           ...movie,
           director: data.Director || "Unknown",
+          plot: data.Plot || "No plot available",
+          cast: (data.Actors || "").split(", ").filter(Boolean).join(","),
           ratings: {
             imdb:
               data.imdbRating && data.imdbRating !== "N/A"
@@ -293,7 +397,7 @@ function MovieListItem({ movie }: { movie: Movie }) {
                 : "N/A",
             rottenTomatoes:
               data.Ratings?.find(
-                (r: { Source: string }) => r.Source === "Rotten Tomatoes"
+                (r: { Source: string }) => r.Source === "Rotten Tomatoes",
               )?.Value || "N/A",
             audience:
               data.imdbRating && data.imdbRating !== "N/A"
@@ -301,17 +405,17 @@ function MovieListItem({ movie }: { movie: Movie }) {
                 : "N/A",
             metacritic:
               data.Ratings?.find(
-                (r: { Source: string }) => r.Source === "Metacritic"
+                (r: { Source: string }) => r.Source === "Metacritic",
               )?.Value || "N/A",
             metacriticUser: data.Ratings?.find(
-              (r: { Source: string }) => r.Source === "Metacritic"
+              (r: { Source: string }) => r.Source === "Metacritic",
             )?.Value
               ? `${Math.round(
                   parseFloat(
                     data.Ratings.find(
-                      (r: { Source: string }) => r.Source === "Metacritic"
-                    )?.Value.replace("/100", "")
-                  ) * 0.8
+                      (r: { Source: string }) => r.Source === "Metacritic",
+                    )?.Value.replace("/100", ""),
+                  ) * 0.8,
                 )}%`
               : "N/A",
           },
@@ -341,13 +445,13 @@ function MovieListItem({ movie }: { movie: Movie }) {
     if (details.ratings.metacritic !== "N/A") {
       accessories.push({
         text: details.ratings.metacritic,
-        icon: { source: "🎯", tintColor: "blue" },
+        icon: { source: "🎯", tintColor: "purple" },
       });
     }
     if (details.ratings.metacriticUser !== "N/A") {
       accessories.push({
         text: details.ratings.metacriticUser,
-        icon: { source: "👥", tintColor: "blue" },
+        icon: { source: "👥", tintColor: "purple" },
       });
     }
     if (details.ratings.imdb !== "N/A") {
@@ -364,107 +468,15 @@ function MovieListItem({ movie }: { movie: Movie }) {
     actions: React.createElement(
       ActionPanel,
       null,
-      React.createElement(ActionPanel.Section, null, [
+      React.createElement(
+        ActionPanel.Section,
+        null,
         React.createElement(Action.Push, {
           key: "details",
           title: "Show Details",
           target: React.createElement(MovieDetails, { movie }),
         }),
-      ])
+      ),
     ),
-  });
-}
-
-export default function Command() {
-  const [searchText, setSearchText] = React.useState("");
-  const [movies, setMovies] = React.useState<Movie[]>([]);
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-
-  React.useEffect(() => {
-    async function performSearch() {
-      if (!searchText.trim()) {
-        setMovies([]);
-        setError(null);
-        return;
-      }
-
-      if (!OMDB_API_KEY) {
-        setError("Please add your OMDB API key in extension preferences");
-        return;
-      }
-
-      try {
-        setIsLoading(true);
-        setError(null);
-        const response = await fetch(
-          `http://www.omdbapi.com/?s=${encodeURIComponent(searchText)}&apikey=${OMDB_API_KEY}`
-        );
-
-        if (!response.ok) {
-          throw new Error(`Failed to fetch movies: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        if (data.Error) {
-          if (data.Error === "Movie not found!") {
-            setMovies([]);
-          } else {
-            throw new Error(data.Error);
-          }
-        } else {
-          setMovies(
-            data.Search.map((item: any) => ({
-              title: item.Title,
-              year: item.Year,
-              imdbID: item.imdbID,
-              poster: item.Poster,
-            }))
-          );
-        }
-      } catch (error) {
-        setError(
-          error instanceof Error ? error.message : "An unknown error occurred"
-        );
-        setMovies([]);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    const debounceTimeout = setTimeout(performSearch, 300);
-    return () => clearTimeout(debounceTimeout);
-  }, [searchText]);
-
-  return React.createElement(List, {
-    isLoading: isLoading,
-    searchText: searchText,
-    onSearchTextChange: setSearchText,
-    searchBarPlaceholder: "Search movies by title...",
-    throttle: true,
-    children: error
-      ? React.createElement(List.EmptyView, {
-          title: "Error",
-          description: error,
-          icon: Icon.ExclamationMark,
-        })
-      : !searchText
-        ? React.createElement(List.EmptyView, {
-            title: "Type to Search",
-            description: "Enter a movie title to start searching",
-            icon: Icon.MagnifyingGlass,
-          })
-        : movies.length === 0
-          ? React.createElement(List.EmptyView, {
-              title: "No Results",
-              description: "Try searching with a different title",
-              icon: Icon.QuestionMark,
-            })
-          : movies.map((movie) =>
-              React.createElement(MovieListItem, {
-                key: movie.imdbID,
-                movie: movie,
-              })
-            ),
   });
 }

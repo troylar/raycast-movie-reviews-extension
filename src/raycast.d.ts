@@ -1,15 +1,21 @@
 import { ComponentType, ReactElement, ReactNode } from "react";
 
 declare module "@raycast/api" {
+  interface IconType {
+    source: string;
+    tintColor?: string;
+  }
+
   interface ListItemProps {
     title: string;
     subtitle?: string;
-    accessories?: Array<{ text?: string; icon?: string }>;
+    accessories?: Array<{ text?: string; icon?: IconType }>;
     actions?: ReactElement;
   }
 
   interface ListProps {
     isLoading?: boolean;
+    searchText?: string;
     onSearchTextChange?: (text: string) => void;
     searchBarPlaceholder?: string;
     throttle?: boolean;
@@ -22,7 +28,7 @@ declare module "@raycast/api" {
 
   interface ActionProps {
     title: string;
-    icon?: string;
+    icon?: IconType;
     target?: ReactElement;
     url?: string;
     children?: ReactNode;
@@ -30,34 +36,77 @@ declare module "@raycast/api" {
 
   interface DetailProps {
     markdown: string;
+    isLoading?: boolean;
+    metadata?: ReactElement | null;
+  }
+
+  interface DetailMetadataTagListItemProps {
+    text: string;
+    icon?: IconType;
+  }
+
+  interface DetailMetadataTagListProps {
+    title: string;
+    key?: string;
+  }
+
+  interface DetailMetadataProps {
+    children: ReactElement | ReactElement[];
   }
 
   const List: ComponentType<ListProps> & {
     Item: ComponentType<ListItemProps>;
+    EmptyView: ComponentType<{
+      title: string;
+      description?: string;
+      icon?: string;
+    }>;
   };
 
   const Action: {
     Push: ComponentType<ActionProps>;
     OpenInBrowser: ComponentType<ActionProps>;
+    CopyToClipboard: ComponentType<{ title: string; content: string }>;
   };
 
-  const ActionPanel: ComponentType<ActionPanelProps>;
-  const Detail: ComponentType<DetailProps>;
-  
-  const Icon: {
-    Eye: string;
-    Star: string;
+  const ActionPanel: ComponentType<ActionPanelProps> & {
+    Section: ComponentType<{ children?: ReactElement | ReactElement[] }>;
   };
 
-  function showToast(toast: { style: any; title: string; message?: string }): void;
-  
-  const Toast: {
-    Style: {
-      Failure: string;
+  const Detail: ComponentType<DetailProps> & {
+    Metadata: ComponentType<DetailMetadataProps> & {
+      TagList: ComponentType<DetailMetadataTagListProps> & {
+        Item: ComponentType<DetailMetadataTagListItemProps>;
+      };
+      Separator: ComponentType<{ key?: string }>;
     };
   };
 
-  export function getPreferenceValues<T>(): T;
+  const Icon: {
+    Eye: string;
+    Star: string;
+    Circle: string;
+    Person: string;
+    Target: string;
+    Calendar: string;
+    ExclamationMark: string;
+    MagnifyingGlass: string;
+    QuestionMark: string;
+  };
+
+  function showToast(toast: {
+    style: "failure" | "success" | "animated";
+    title: string;
+    message?: string;
+  }): void;
+
+  const Toast: {
+    Style: {
+      Failure: "failure";
+    };
+  };
+
+  function getPreferenceValues<T>(): T;
 
   export {
     List,
@@ -67,10 +116,6 @@ declare module "@raycast/api" {
     Icon,
     showToast,
     Toast,
-    ListProps,
-    ListItemProps,
-    ActionPanelProps,
-    ActionProps,
-    DetailProps,
+    getPreferenceValues,
   };
 }
